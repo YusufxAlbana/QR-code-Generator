@@ -1,20 +1,65 @@
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart'; // untuk kReleaseMode
 import 'package:flutter/material.dart';
-import 'core/theme/theme_data.dart';
+
+import 'ui/splash_screen.dart';
 import 'ui/home_screen.dart';
+// import 'ui/qr_generator_screen.dart'; // TODO: Fix path lib/ui/qr_generator/qr_generator_screen.dart
+// import 'ui/qr_scanner_screen.dart';   // TODO: Fix path lib/ui/qr_scanner/qr_scanner_screen.dart
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode, // mati otomatis saat build release
+      defaultDevice: Devices.ios.iPhone11ProMax,
+      devices: [
+        Devices.ios.iPhone11ProMax,
+        // Devices.android.samsungGalaxyS23Ultra, // ERROR: Not defined in this version
+        Devices.ios.iPadPro11Inches,
+      ],
+      builder: (context) => const MainApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MainApp extends StatelessWidget {
+  const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'QR Generator & Scanner',
-      theme: AppTheme.lightTheme,
-      home: const HomeScreen(title: 'QR Generator & Scanner'),
+      // Integrasi Device Preview (wajib ketiga baris ini)
+      useInheritedMediaQuery: true,
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
+
+      debugShowCheckedModeBanner: false,
+      title: 'QRODE - QR Generator & Scanner',
+
+      // Tema global menggunakan Material 3
+      theme: ThemeData(
+        fontFamily: 'Manrope',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF553FB8), // warna brand utama
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.grey[50],
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          elevation: 0,
+        ),
+      ),
+
+      // Routing sederhana dengan named routes
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/home': (context) => const HomeScreen(title: 'QRODE'),
+        // '/create': (context) => const QrGeneratorScreen(),
+        // '/scan': (context) => const QrScannerScreen(),
+      },
     );
   }
 }
