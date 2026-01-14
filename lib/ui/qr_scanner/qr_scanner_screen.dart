@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../models/history_item.dart';
+import '../../services/history_service.dart';
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({super.key});
@@ -122,6 +124,13 @@ class _QrScannerScreenState extends State<QrScannerScreen>
 
     if (barcode != null && barcode.rawValue != null && image != null) {
       _controller.stop();
+      // History
+      HistoryService().addToHistory(HistoryItem(
+        id: DateTime.now().toString(),
+        type: HistoryType.scan,
+        data: barcode.rawValue!,
+        timestamp: DateTime.now(),
+      ));
       setState(() => _barcodeValue = barcode.rawValue);
 
       showDialog(
@@ -240,10 +249,65 @@ class ScanGuideBottomSheet extends StatelessWidget {
             width: 200,
             height: 200,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
+
+          // Tips Section
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF8E1), // Light yellow
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.amber.shade300),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.lightbulb_outline, color: Colors.amber.shade700, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Tips Agar Scan Lebih Akurat:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber.shade900,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildTipItem(Icons.wb_sunny_outlined, 'Pastikan pencahayaan cukup terang'),
+                _buildTipItem(Icons.straighten, 'Jaga jarak 15-30 cm dari QR Code'),
+                _buildTipItem(Icons.center_focus_strong, 'Posisikan QR Code di tengah kotak'),
+                _buildTipItem(Icons.blur_off, 'Hindari bayangan pada QR Code'),
+                _buildTipItem(Icons.phone_android, 'Pegang HP dengan stabil'),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
           FilledButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Mulai Scan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipItem(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.grey.shade700),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
+            ),
           ),
         ],
       ),

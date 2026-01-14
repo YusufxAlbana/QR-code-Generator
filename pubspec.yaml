@@ -31,17 +31,17 @@ dependencies:
   flutter:
     sdk: flutter
   # Device preview untuk testing UI di berbagai device (development only)
-  device_preview: ^1.3.1
-  # Scanner QR Code dengan kamera (support Android/iOS/Web)
-  mobile_scanner: ^7.1.3
-  # Permission handler untuk minta akses kamera, storage, dll
-  permission_handler: ^11.3.1
-  # Generator QR Code cantik & customizable
-  pretty_qr_code: ^3.5.0
-  # Ambil screenshot widget (untuk save/share QR)
-  screenshot: ^3.0.0
-  # Share QR code ke aplikasi lain (WA, IG, Email, dll)
+  device_preview: ^1.3.1        # Scanner QR Code dengan kamera (support Android/iOS/Web)
+  mobile_scanner: ^7.1.3        # Permission handler untuk minta akses kamera, storage, dll
+  permission_handler: ^11.3.1   # Generator QR Code cantik & customizable
+  pretty_qr_code: ^3.5.0        # Ambil screenshot widget (untuk save/share QR)
+  screenshot: ^3.0.0            # Share QR code ke aplikasi lain (WA, IG, Email, dll)
   share_plus: ^12.0.1
+  pdf: ^3.11.3                  # Latest stabil untuk generate PDF
+  printing: ^5.14.2             # Untuk preview & print PDF
+  path_provider: ^2.1.5         # Untuk akses direktori file (Downloads)
+  open_file: ^3.5.0             # Untuk buka PDF setelah generate (opsional)
+  shared_preferences: ^2.2.2    # Penyimpanan lokal key-value (Web support)
 
 dev_dependencies:
   flutter_test:

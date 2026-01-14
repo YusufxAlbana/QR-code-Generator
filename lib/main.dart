@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'ui/splash_screen.dart';
 import 'ui/home_screen.dart';
+import 'ui/history_screen.dart';
 import 'ui/qr_generator/qr_generator_screen.dart';
 import 'ui/qr_scanner/qr_scanner_screen.dart';
 
@@ -59,6 +60,7 @@ class MainApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/create': (context) => const QrGeneratorScreen(),
         '/scan': (context) => const QrScannerScreen(),
+        '/history': (context) => const HistoryScreen(),
       },
     );
   }
