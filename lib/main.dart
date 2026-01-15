@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'ui/splash_screen.dart';
 import 'ui/home_screen.dart';
 import 'ui/history_screen.dart';
+import 'ui/profile_screen.dart';
 import 'ui/qr_generator/qr_generator_screen.dart';
 import 'ui/qr_scanner/qr_scanner_screen.dart';
 
@@ -37,19 +38,32 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'QRODE - QR Generator & Scanner',
 
-      // Tema global menggunakan Material 3
+      // Apple-inspired theme
       theme: ThemeData(
         fontFamily: 'Manrope',
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF553FB8), // warna brand utama
+          seedColor: const Color(0xFF007AFF), // Apple Blue
           brightness: Brightness.light,
+          primary: const Color(0xFF007AFF),
+          secondary: const Color(0xFF5856D6),
+          surface: const Color(0xFFF2F2F7),
+          error: const Color(0xFFFF3B30),
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: Colors.grey[50],
+        scaffoldBackgroundColor: const Color(0xFFF2F2F7), // iOS system gray
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Color(0xFF1C1C1E),
           elevation: 0,
+          centerTitle: true,
+        ),
+        // iOS-style page transitions
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
+          },
         ),
       ),
 
@@ -61,6 +75,7 @@ class MainApp extends StatelessWidget {
         '/create': (context) => const QrGeneratorScreen(),
         '/scan': (context) => const QrScannerScreen(),
         '/history': (context) => const HistoryScreen(),
+        '/profile': (context) => const ProfileScreen(),
       },
     );
   }

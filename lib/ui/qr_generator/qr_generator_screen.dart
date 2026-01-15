@@ -13,16 +13,25 @@ import 'package:open_file/open_file.dart';
 import '../../models/history_item.dart';
 import '../../services/history_service.dart';
 
-const Color primaryColor = Color(0xFF3A2EC3);
+// Apple Color Palette
+const Color appleBlue = Color(0xFF007AFF);
+const Color appleRed = Color(0xFFFF3B30);
+const Color appleGreen = Color(0xFF34C759);
+const Color applePurple = Color(0xFF5856D6);
+const Color appleGray = Color(0xFFF2F2F7);
+const Color appleDarkText = Color(0xFF1C1C1E);
+const Color appleSecondaryText = Color(0xFF8E8E93);
 
 const List<Color> qrColors = [
-  Colors.white,
-  Colors.grey,
-  Colors.orange,
-  Colors.yellow,
-  Colors.green,
-  Colors.cyan,
-  Colors.purple,
+  Colors.white,                // Clean white
+  Color(0xFFFFD93D),           // Sunny Yellow
+  Color(0xFFFF6B6B),           // Coral Red
+  Color(0xFF6BCB77),           // Fresh Green
+  Color(0xFF4D96FF),           // Sky Blue
+  Color(0xFFB983FF),           // Lavender Purple
+  Color(0xFFFF9F45),           // Orange
+  Color(0xFF00D9FF),           // Turquoise Cyan
+  Color(0xFFFF69B4),           // Hot Pink
 ];
 
 class QrGeneratorScreen extends StatefulWidget {
@@ -34,10 +43,8 @@ class QrGeneratorScreen extends StatefulWidget {
 
 class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
   final ScreenshotController _screenshotController = ScreenshotController();
-  OverlayEntry? _overlayEntry;
-  final ValueNotifier<List<ToastData>> _toastQueue = ValueNotifier([]);
+  final TextEditingController _textController = TextEditingController();
 
-  // Form State
   String? _qrData;
   Color _qrColor = Colors.white;
   bool _hasReceivedInitialData = false;
@@ -50,6 +57,7 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
       if (args is String && args.isNotEmpty) {
         setState(() {
           _qrData = args;
+          _textController.text = args;
         });
       }
       _hasReceivedInitialData = true;
@@ -58,17 +66,30 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
 
   @override
   void dispose() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
+    _textController.dispose();
     super.dispose();
   }
 
   // --- PDF GENERATION ---
   Future<void> _generateAndPrintPdf() async {
+    if (_qrData == null || _qrData!.isEmpty) {
+      _showErrorSnackBar();
+      return;
+    }
+    
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const CircularProgressIndicator(color: appleBlue),
+        ),
+      ),
     );
 
     try {
@@ -159,7 +180,6 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
             final file = File(path);
             await file.writeAsBytes(await pdf.save());
 
-            // History
             await HistoryService().addToHistory(HistoryItem(
               id: DateTime.now().toString(),
               type: HistoryType.create,
@@ -173,7 +193,9 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('PDF Saved: $path'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: appleGreen,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   action: SnackBarAction(
                     label: 'OPEN',
                     textColor: Colors.white,
@@ -198,7 +220,11 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
     } catch (e) {
       if (mounted) Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Error: $e'), 
+          backgroundColor: appleRed,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
@@ -206,14 +232,23 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
   // --- PNG SAVING ---
   Future<void> _savePng() async {
     if (_qrData == null || _qrData!.isEmpty) {
-      _showErrorSnackBar(context);
+      _showErrorSnackBar();
       return;
     }
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const CircularProgressIndicator(color: appleBlue),
+        ),
+      ),
     );
 
     try {
@@ -229,9 +264,11 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Use Share feature for Web download.'),
-                backgroundColor: Colors.orange),
+            SnackBar(
+              content: const Text('Use Share feature for Web download.'),
+              backgroundColor: appleBlue,
+              behavior: SnackBarBehavior.floating,
+            ),
           );
         }
         return;
@@ -252,7 +289,6 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
         final file = File(path);
         await file.writeAsBytes(imageBytes);
 
-        // History
         await HistoryService().addToHistory(HistoryItem(
           id: DateTime.now().toString(),
           type: HistoryType.create,
@@ -266,7 +302,9 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('PNG Saved: $path'),
-              backgroundColor: Colors.green,
+              backgroundColor: appleGreen,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               action: SnackBarAction(
                 label: 'OPEN',
                 textColor: Colors.white,
@@ -283,73 +321,52 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
       if (mounted) Navigator.pop(context);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+          SnackBar(
+            content: Text('Error: $e'), 
+            backgroundColor: appleRed,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
   }
 
-  // --- ERROR SNACKBAR ---
-  void _showErrorSnackBar(BuildContext context) {
-    if (_overlayEntry == null) {
-      _overlayEntry = OverlayEntry(builder: (context) {
-        return Positioned(
-          top: MediaQuery.of(context).padding.top + 10,
-          right: 20,
-          width: MediaQuery.of(context).size.width * 0.5,
-          child: Material(
-            color: Colors.transparent,
-            child: ValueListenableBuilder<List<ToastData>>(
-              valueListenable: _toastQueue,
-              builder: (context, toasts, child) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: toasts.map((t) => ToastWidget(
-                        key: ValueKey(t.id),
-                        data: t,
-                        onDismiss: () {
-                          final list = List<ToastData>.from(_toastQueue.value);
-                          list.removeWhere((item) => item.id == t.id);
-                          _toastQueue.value = list;
-                        },
-                      )).toList(),
-                );
-              },
-            ),
-          ),
-        );
-      });
-      Overlay.of(context).insert(_overlayEntry!);
-    }
-
-    final list = List<ToastData>.from(_toastQueue.value);
-    if (list.length >= 3) {
-      list.removeAt(0);
-    }
-    list.add(ToastData('Oops! Konten kosong.\nIsi dulu yuk!'));
-    _toastQueue.value = list;
+  void _showErrorSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Text('Please enter content first!'),
+          ],
+        ),
+        backgroundColor: appleRed,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
-  // --- UI START ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: appleGray,
       appBar: AppBar(
         title: const Text(
-          'QR Creator',
+          'Create QR',
           style: TextStyle(
             fontFamily: 'Manrope',
             fontWeight: FontWeight.w700,
-            color: Colors.black87,
-            fontSize: 20,
+            color: appleDarkText,
+            fontSize: 18,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new, color: appleBlue, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -358,115 +375,109 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: Column(
           children: [
-            // HERO CARD SECTION
-            Center(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(32),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryColor.withOpacity(0.15),
-                      blurRadius: 40,
-                      offset: const Offset(0, 16),
+            // QR Preview Card
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: appleBlue.withOpacity(0.1),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Screenshot(
+                controller: _screenshotController,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: _qrColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.grey.shade200,
+                      width: 1,
                     ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Screenshot(
-                      controller: _screenshotController,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: _qrColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.grey.shade200,
-                            width: 1.5,
+                  ),
+                  child: _qrData == null || _qrData!.isEmpty
+                      ? Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: appleGray,
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        ),
-                        child: _qrData == null || _qrData!.isEmpty
-                            ? Container(
-                                width: 220,
-                                height: 220,
-                                decoration: BoxDecoration(
-                                    color: Colors.grey.shade50,
-                                    borderRadius: BorderRadius.circular(16)),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.qr_code_2_rounded,
-                                        size: 64, color: Colors.grey.shade300),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Preview QR',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : SizedBox(
-                                width: 220,
-                                height: 220,
-                                child: PrettyQrView.data(
-                                  data: _qrData!,
-                                  decoration: const PrettyQrDecoration(
-                                    shape: PrettyQrSmoothSymbol(),
-                                  ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.qr_code_2_rounded,
+                                  size: 56, color: appleSecondaryText.withOpacity(0.4)),
+                              const SizedBox(height: 12),
+                              Text(
+                                'QR Preview',
+                                style: TextStyle(
+                                  color: appleSecondaryText,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
                                 ),
                               ),
-                      ),
-                    ),
-                  ],
+                            ],
+                          ),
+                        )
+                      : SizedBox(
+                          width: 200,
+                          height: 200,
+                          child: PrettyQrView.data(
+                            data: _qrData!,
+                            decoration: const PrettyQrDecoration(
+                              shape: PrettyQrSmoothSymbol(),
+                            ),
+                          ),
+                        ),
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
 
-            // INPUT SECTION
+            // Content Input
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 8, bottom: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 8),
                   child: Text(
                     'Content',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: appleDarkText,
                     ),
                   ),
                 ),
                 TextField(
+                  controller: _textController,
                   maxLines: null,
                   decoration: InputDecoration(
-                    hintText: 'Enter text or URL here...',
-                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                    hintText: 'Enter text or URL...',
+                    hintStyle: TextStyle(color: appleSecondaryText.withOpacity(0.6)),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.all(20),
+                    contentPadding: const EdgeInsets.all(18),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide:
-                          const BorderSide(color: primaryColor, width: 2),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: appleBlue, width: 2),
                     ),
-                    prefixIcon:
-                        const Icon(Icons.link_rounded, color: Colors.grey),
+                    prefixIcon: Icon(Icons.link_rounded, color: appleSecondaryText),
                   ),
                   onChanged: (value) {
                     setState(() =>
@@ -475,25 +486,25 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
-            // COLOR PICKER
+            // Color Picker
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 8, bottom: 12),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 12),
                   child: Text(
-                    'Background Color',
+                    'Background',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: appleDarkText,
                     ),
                   ),
                 ),
                 SizedBox(
-                  height: 60,
+                  height: 56,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: qrColors.length,
@@ -503,40 +514,38 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
                       final isSelected = _qrColor == color;
                       return GestureDetector(
                         onTap: () => setState(() => _qrColor = color),
-                        child: HoverWidget(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? primaryColor
-                                    : Colors.grey.shade200,
-                                width: isSelected ? 3 : 1,
-                              ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: color.withOpacity(0.4),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      )
-                                    ]
-                                  : [],
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? appleBlue : Colors.grey.shade300,
+                              width: isSelected ? 3 : 1,
                             ),
-                            child: isSelected && color == Colors.white
-                                ? const Center(
-                                    child: Icon(Icons.check,
-                                        size: 20, color: primaryColor))
-                                : (isSelected
-                                    ? const Center(
-                                        child: Icon(Icons.check,
-                                            size: 20, color: Colors.white))
-                                    : null),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: appleBlue.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    )
+                                  ]
+                                : [],
                           ),
+                          child: isSelected
+                              ? Center(
+                                  child: Icon(
+                                    Icons.check_rounded,
+                                    size: 20,
+                                    color: color == Colors.white 
+                                        ? appleBlue 
+                                        : appleDarkText,
+                                  ),
+                                )
+                              : null,
                         ),
                       );
                     },
@@ -544,32 +553,27 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 36),
 
-            // ACTION BUTTONS
+            // Action Buttons
             Row(
               children: [
                 Expanded(
-                  child: _buildActionButton(
+                  child: _AppleActionButton(
                     icon: Icons.share_rounded,
                     label: 'Share',
-                    color: const Color(0xFF4B68FF),
+                    color: appleBlue,
+                    isEnabled: _qrData != null && _qrData!.isNotEmpty,
                     onTap: () async {
-                      if (_qrData == null || _qrData!.isEmpty) {
-                        _showErrorSnackBar(context);
-                        return;
-                      }
                       await Future.delayed(const Duration(milliseconds: 100));
                       final imageBytes = await _screenshotController.capture(
                           pixelRatio: MediaQuery.of(context).devicePixelRatio);
                       if (imageBytes != null) {
                         await Share.shareXFiles([
                           XFile.fromData(imageBytes,
-                              name:
-                                  'qr_pro_${DateTime.now().millisecondsSinceEpoch}.png',
+                              name: 'qr_${DateTime.now().millisecondsSinceEpoch}.png',
                               mimeType: 'image/png')
                         ]);
-                        // History
                         await HistoryService().addToHistory(HistoryItem(
                           id: DateTime.now().toString(),
                           type: HistoryType.create,
@@ -580,251 +584,163 @@ class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.send_rounded,
-                    label: 'Send',
-                    color: const Color(0xFF00C853),
+                  child: _AppleActionButton(
+                    icon: Icons.download_rounded,
+                    label: 'Save',
+                    color: appleGreen,
                     isEnabled: _qrData != null && _qrData!.isNotEmpty,
-                    onTap: () async {
-                      // Send Logic
-                      await Future.delayed(const Duration(milliseconds: 100));
-                      final imageBytes = await _screenshotController.capture(
-                          pixelRatio: MediaQuery.of(context).devicePixelRatio);
-                      if (imageBytes != null) {
-                        await Share.shareXFiles(
-                          [
-                            XFile.fromData(imageBytes,
-                                name: 'qr_pro.png', mimeType: 'image/png')
-                          ],
-                          text:
-                              'Here is your Premium QR Code for: ${_qrData ?? ''}',
-                        );
-                        // History
-                        await HistoryService().addToHistory(HistoryItem(
-                          id: DateTime.now().toString(),
-                          type: HistoryType.create,
-                          data: _qrData!,
-                          timestamp: DateTime.now(),
-                        ));
-                      }
-                    },
+                    onTap: _savePng,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: _buildActionButton(
+                  child: _AppleActionButton(
                     icon: Icons.print_rounded,
-                    label: 'Print',
-                    color: const Color(0xFF9C27B0),
+                    label: 'PDF',
+                    color: applePurple,
                     isEnabled: _qrData != null && _qrData!.isNotEmpty,
                     onTap: _generateAndPrintPdf,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // RESET BUTTON
-            TextButton.icon(
+            // Reset Button
+            TextButton(
               onPressed: () {
                 setState(() {
                   _qrData = null;
                   _qrColor = Colors.white;
+                  _textController.clear();
                 });
               },
-              icon: const Icon(Icons.refresh_rounded, color: Colors.redAccent),
-              label: const Text(
-                'Reset All',
-                style: TextStyle(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16),
-              ),
-              style: TextButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.refresh_rounded, color: appleRed, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Reset',
+                    style: TextStyle(
+                      color: appleRed,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    VoidCallback? onTap,
-    bool isEnabled = true,
-  }) {
-    return HoverWidget(
-      hoverScale: 1.05,
-      child: Container(
-        decoration: BoxDecoration(
-          boxShadow: isEnabled
-              ? [
-                  BoxShadow(
-                    color: color.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  )
-                ]
-              : [],
-        ),
-        child: ElevatedButton(
-          onPressed: isEnabled ? onTap : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            disabledBackgroundColor: Colors.grey.shade300,
-            foregroundColor: Colors.white,
-            disabledForegroundColor: Colors.grey.shade500,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 0,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 22),
-              const SizedBox(height: 4),
-              Text(label,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 12)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
-class ToastData {
-  final String id;
-  final String message;
-  ToastData(this.message)
-      : id = DateTime.now().toString() + (UserIndex++).toString();
-  static int UserIndex = 0;
-}
+class _AppleActionButton extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+  final bool isEnabled;
 
-class ToastWidget extends StatefulWidget {
-  final ToastData data;
-  final VoidCallback onDismiss;
-  const ToastWidget({super.key, required this.data, required this.onDismiss});
+  const _AppleActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+    this.isEnabled = true,
+  });
 
   @override
-  State<ToastWidget> createState() => _ToastWidgetState();
+  State<_AppleActionButton> createState() => _AppleActionButtonState();
 }
 
-class _ToastWidgetState extends State<ToastWidget> {
-  double _opacity = 0.0;
+class _AppleActionButtonState extends State<_AppleActionButton> {
+  bool _isPressed = false;
+  bool _isHovered = false;
 
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      if (mounted) setState(() => _opacity = 1.0);
-    });
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) setState(() => _opacity = 0.0);
-    });
+  double get _scale {
+    if (_isPressed) return 0.95;
+    if (_isHovered && widget.isEnabled) return 1.03;
+    return 1.0;
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _opacity,
-      duration: const Duration(milliseconds: 500),
-      onEnd: () {
-        if (_opacity == 0.0) widget.onDismiss();
-      },
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.red.shade600,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 4))
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.warning_amber_rounded,
-                color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                widget.data.message,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  fontFamily: 'Manrope',
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HoverWidget extends StatefulWidget {
-  final Widget child;
-  final double hoverScale;
-
-  const HoverWidget({super.key, required this.child, this.hoverScale = 1.1});
-
-  @override
-  State<HoverWidget> createState() => _HoverWidgetState();
-}
-
-class _HoverWidgetState extends State<HoverWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 200));
-    _scaleAnimation = Tween<double>(begin: 1.0, end: widget.hoverScale).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+    // Show original color with reduced opacity when disabled
+    final double buttonOpacity = widget.isEnabled ? 1.0 : 0.35;
+    
     return MouseRegion(
-      onEnter: (_) => _controller.forward(),
-      onExit: (_) => _controller.reverse(),
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: widget.isEnabled ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
+      child: GestureDetector(
+        onTapDown: widget.isEnabled ? (_) => setState(() => _isPressed = true) : null,
+        onTapUp: widget.isEnabled ? (_) {
+          setState(() => _isPressed = false);
+          widget.onTap?.call();
+        } : null,
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedScale(
+          scale: _scale,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              // Always use the original color, but with opacity when disabled
+              color: widget.color.withOpacity(buttonOpacity),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _isHovered && widget.isEnabled 
+                    ? Colors.white.withOpacity(0.3) 
+                    : Colors.transparent,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.color.withOpacity(
+                    widget.isEnabled 
+                        ? (_isHovered ? 0.4 : 0.3) 
+                        : 0.15
+                  ),
+                  blurRadius: widget.isEnabled 
+                      ? (_isHovered ? 16 : 12) 
+                      : 8,
+                  offset: Offset(0, widget.isEnabled 
+                      ? (_isHovered ? 6 : 4) 
+                      : 2),
+                  spreadRadius: _isHovered && widget.isEnabled ? 1 : 0,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  widget.icon, 
+                  size: 22, 
+                  color: Colors.white.withOpacity(widget.isEnabled ? 1.0 : 0.7),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(widget.isEnabled ? 1.0 : 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        child: widget.child,
       ),
     );
   }
